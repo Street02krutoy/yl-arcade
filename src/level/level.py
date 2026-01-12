@@ -7,13 +7,12 @@ from entity.player import Player
 
 
 class GameLevel:
-    def __init__(self, enemies_amount: int):
+    def __init__(self):
         self.timer = 10*60
-        self.enemies_remaining = enemies_amount
         self.enemies_spawned = 0
-        self.spawn_base = 0.95 
+        self.spawn_base = 0.98
         self.spawn_multiplier = 10.0  
-        self.spawn_timer = self.spawn_multiplier
+        self.spawn_timer = 0.5
 
     def update(self, delta_time: float, player: Player, enemies_list: arcade.SpriteList[BaseEnemy]):
         self.spawn_timer -= delta_time
@@ -28,7 +27,7 @@ class GameLevel:
         angle = random.uniform(0, 2 * math.pi)
         enemy_damage = random.randint(6, 12)
 
-        enemy = BaseEnemy(enemy_damage,  abs(9-enemy_damage), "assets/deadass.png", enemy_damage/2, 15 - enemy_damage)
+        enemy = BaseEnemy(enemy_damage,  abs(9-enemy_damage), "assets/deadass.png", enemy_damage/2, 15 - enemy_damage, player)
 
         enemy.center_x = math.sin(angle)*distance+player.center_x
         enemy.center_y = math.cos(angle)*distance+player.center_y

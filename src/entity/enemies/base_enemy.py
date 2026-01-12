@@ -8,13 +8,14 @@ PathOrTexture = str | arcade.Path | bytes | arcade.Texture | None # type: ignore
 
 class BaseEnemy(arcade.Sprite):
 
-    def __init__(self, damage: float, movespeed: float, texture: PathOrTexture, attack_speed: float, hp: float):
+    def __init__(self, damage: float, movespeed: float, texture: PathOrTexture, attack_speed: float, hp: float, player: Player):
         super().__init__(texture)
         self._damage = damage
         self.movespeed = movespeed
         self.attack_speed = attack_speed
         self.max_hp = hp
         self.hp = hp
+        self.player = player
         self.attack_cd = -1.0
 
     def draw_health_bar(self):
@@ -41,20 +42,20 @@ class BaseEnemy(arcade.Sprite):
             arcade.color.GREEN
         )
 
-    def update(self, delta_time: float, player: Player, enemies_list: arcade.SpriteList[arcade.Sprite]) -> None: # type: ignore
+    def update(self, delta_time: float, enemies_list: arcade.SpriteList[arcade.Sprite]) -> None: # type: ignore
         if self.hp <= 0:
             self.kill()
         self.attack_cd -= delta_time
-        dx = player.center_x - self.center_x
-        dy = player.center_y - self.center_y
+        dx = self.player.center_x - self.center_x
+        dy = self.player.center_y - self.center_y
 
         distance = math.hypot(dx, dy)
 
         if distance > 0:
             dx /= distance # sin
             dy /= distance # cos 
-            if self.collides_with_sprite(player):
-                self.collision_with_player(player)
+            if self.collides_with_sprite(self.player):
+                self.collision_with_player()
             else:
                 self.center_x += dx * self.movespeed
                 self.center_y += dy * self.movespeed
@@ -77,8 +78,11 @@ class BaseEnemy(arcade.Sprite):
     def damage(self, amount: float):
         self.hp -= amount
         
+    def kill(self) -> None:
+        self.player.add_xp(100)
+        return super().kill()
 
-    def collision_with_player(self, player: Player):
+    def collision_with_player(self):
         if(self.attack_cd<=0):
-            player.damage(self._damage)
+            self.player.damage(self._damage)
             self.attack_cd = self.attack_speed

@@ -39,7 +39,7 @@ class GameView(arcade.View):
         self.camera = arcade.Camera2D()
         self.keys = set[int]()
         self.player_list = arcade.SpriteList[Player]()
-        self.level = GameLevel(1000)
+        self.level = GameLevel()
 
         self.player_list.append(self.player)
         self.ms_boost_list = arcade.SpriteList[arcade.Sprite]()
@@ -78,10 +78,10 @@ class GameView(arcade.View):
                 enemy.draw_health_bar()
         
         arcade.draw_lbwh_rectangle_filled(
-            10, self.height-20, self.width-10, 10, arcade.color.BLACK
+            10, self.height-30, self.width-20, 20, arcade.color.BLACK
         )
         arcade.draw_lbwh_rectangle_filled(
-            10, self.height-20, (self.width-10)*self.player.hitpoints/100, 10, arcade.color.RED
+            10, self.height-30, (self.width-20)*self.player.hitpoints/100, 20, arcade.color.ROSE_RED
         )
         
         self.batch.draw()
@@ -103,8 +103,8 @@ class GameView(arcade.View):
             return
         self.level.update(delta_time, self.player, self.enemy_list)
         self.weapons_list.update(delta_time, self.enemy_list, self.player) # type: ignore
-        self.enemy_list.update(delta_time, self.player, self.enemy_list) # type: ignore
-        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}, Position: {self.player.position}, Time: {self.format_time_mm_ss(int(self.level.timer))}, Spawn: {self.level.spawn_timer}",
+        self.enemy_list.update(delta_time, self.enemy_list) # type: ignore
+        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}, Position: {self.player.position}, Time: {self.format_time_mm_ss(int(self.level.timer))}, Spawn: {round(self.level.spawn_timer, 2)}, XP: {self.player.xp}/{self.player.xp_to_next_lvl}({self.player.level})",
                                      16, 16, arcade.color.GREEN, 14, batch=self.batch)
         self.player.update_movespeed_with_keys(self.keys)
         self.player.update_movement(delta_time)
@@ -126,7 +126,7 @@ class GameView(arcade.View):
     def on_key_press(self, symbol: int, modifiers: int):
         self.keys.add(symbol)
         if symbol == arcade.key.R:
-            self.reset(GameLevel(1000))
+            self.reset(GameLevel())
 
 
     def on_key_release(self, symbol: int, modifiers: int):
