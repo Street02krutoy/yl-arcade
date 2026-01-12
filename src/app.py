@@ -36,7 +36,7 @@ class GameView(arcade.View):
         self.player = Player()
         self.camera = arcade.Camera2D()
         self.keys = set[int]()
-        self.player_list = arcade.SpriteList[arcade.Sprite]()
+        self.player_list = arcade.SpriteList[Player]()
         self.level = GameLevel(1000)
 
         self.player_list.append(self.player)
@@ -45,7 +45,7 @@ class GameView(arcade.View):
                                     scale=0.1))
         for item in self.ms_boost_list:
             item.center_x, item.center_y = (253, 135)  
-        self.enemy_list = arcade.SpriteList[arcade.Sprite]()
+        self.enemy_list = arcade.SpriteList[BaseEnemy]()
         self.batch = Batch()
         
         self.engine = arcade.PhysicsEngineSimple(
@@ -85,11 +85,10 @@ class GameView(arcade.View):
                 return
             self.text_info = arcade.Text(f"umer",
                                      16, 16, arcade.color.RED, 14, batch=self.batch)
-            self.player.kill()
             return
-        self.level.update(delta_time)
-        self.enemy_list.update(delta_time, self.player)
-        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}, Position: {self.player.position}, Time: {self.format_time_mm_ss(int(self.level.timer))}, Inv: {self.player.invulnerability}",
+        self.level.update(delta_time, self.player, self.enemy_list)
+        self.enemy_list.update(delta_time, self.player, self.enemy_list) # type: ignore
+        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}, Position: {self.player.position}, Time: {self.format_time_mm_ss(int(self.level.timer))}, Spawn: {self.level.spawn_timer}",
                                      16, 16, arcade.color.GREEN, 14, batch=self.batch)
         self.player.update_movespeed_with_keys(self.keys)
         self.player.update_movement(delta_time)
@@ -105,14 +104,11 @@ class GameView(arcade.View):
             new_boost.center_x, new_boost.center_y = (random.randrange(100, WINDOW_WIDTH - 100), random.randrange(100, WINDOW_HEIGHT -100))  
             
             self.player.movespeed += 1
-            self.player.damage(10)
 
         self.engine.update()
         
     def on_key_press(self, symbol: int, modifiers: int):
         self.keys.add(symbol)
-        if symbol == arcade.key.P:
-            self.enemy_list.append(BaseEnemy(10, 2.5, "assets/deadass.png"))
         if symbol == arcade.key.R:
             self.reset(GameLevel(1000))
 
