@@ -13,6 +13,8 @@ import random
 
 from entity.enemies.base_enemy import BaseEnemy
 from entity.player import Player
+from entity.weapons.base_weapon import BaseWeapon
+from entity.weapons.circular_rotating_weapon import CircularRotatingWeapon
 from level.level import GameLevel
 
 WINDOW_WIDTH = 1280
@@ -43,6 +45,9 @@ class GameView(arcade.View):
         self.ms_boost_list = arcade.SpriteList[arcade.Sprite]()
         self.ms_boost_list.append(arcade.Sprite("assets/crystal.png",
                                     scale=0.1))
+        self.weapons_list = arcade.SpriteList[BaseWeapon]()
+        self.weapons_list.append(CircularRotatingWeapon("assets/linuh.png", 1, 500, 0.5))
+        self.weapons_list.append(CircularRotatingWeapon("assets/linuh.png", 2, 250, 1))
         for item in self.ms_boost_list:
             item.center_x, item.center_y = (253, 135)  
         self.enemy_list = arcade.SpriteList[BaseEnemy]()
@@ -68,6 +73,16 @@ class GameView(arcade.View):
             self.player_list.draw()
             self.ms_boost_list.draw()
             self.enemy_list.draw()
+            self.weapons_list.draw()
+            for enemy in self.enemy_list:
+                enemy.draw_health_bar()
+        
+        arcade.draw_lbwh_rectangle_filled(
+            10, self.height-20, self.width-10, 10, arcade.color.BLACK
+        )
+        arcade.draw_lbwh_rectangle_filled(
+            10, self.height-20, (self.width-10)*self.player.hitpoints/100, 10, arcade.color.RED
+        )
         
         self.batch.draw()
         
@@ -87,6 +102,7 @@ class GameView(arcade.View):
                                      16, 16, arcade.color.RED, 14, batch=self.batch)
             return
         self.level.update(delta_time, self.player, self.enemy_list)
+        self.weapons_list.update(delta_time, self.enemy_list, self.player) # type: ignore
         self.enemy_list.update(delta_time, self.player, self.enemy_list) # type: ignore
         self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}, Position: {self.player.position}, Time: {self.format_time_mm_ss(int(self.level.timer))}, Spawn: {self.level.spawn_timer}",
                                      16, 16, arcade.color.GREEN, 14, batch=self.batch)

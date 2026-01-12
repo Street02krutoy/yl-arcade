@@ -1,0 +1,25 @@
+import arcade
+
+from entity.enemies.base_enemy import BaseEnemy
+from entity.player import Player
+
+
+class BaseWeapon(arcade.Sprite):
+    def __init__(self, path_or_texture: str | arcade.Path | bytes | arcade.Texture, damage: float, hit_interval: float = 0.5) -> None: # type: ignore
+        super().__init__(path_or_texture, 0.1)
+        self.damage = damage
+        self.hit_timers: dict[BaseEnemy, float] = {}
+        self.hit_interval = hit_interval
+
+    def update(self, delta_time: float, enemies_list: arcade.SpriteList[BaseEnemy], player: Player):
+        super().update(delta_time) # type: ignore
+        for enemy in list(self.hit_timers):
+            self.hit_timers[enemy] -= delta_time
+            if self.hit_timers[enemy] <= 0:
+                del self.hit_timers[enemy]
+        collisions = arcade.check_for_collision_with_list(self, enemies_list)
+        for enemy in collisions:
+            if not self.hit_timers.get(enemy):
+                self.hit_timers[enemy] = self.hit_interval
+                enemy.damage(self.damage)
+          

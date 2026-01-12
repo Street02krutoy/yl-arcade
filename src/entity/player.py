@@ -8,6 +8,7 @@ class Player(arcade.Sprite):
         self.movement: tuple[int, int] = (0, 0)
         self.movespeed = 3
         self.hitpoints = 100
+        self.max_hp = self.hitpoints
         self.spawn_point = (128, 256)  
         self.xp = 0
         self.level = 0
