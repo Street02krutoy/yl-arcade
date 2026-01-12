@@ -12,6 +12,7 @@ from pyglet.graphics import Batch
 import random
 
 from entity.player import Player
+from level.level import GameLevel
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -31,8 +32,10 @@ class GameView(arcade.View):
         super().__init__()
         self.background_color = arcade.color.GRAY_BLUE
         self.player = Player()
-        
+        self.camera = arcade.Camera2D()
+        self.keys = set[int]()
         self.player_list = arcade.SpriteList[arcade.Sprite]()
+        self.level = GameLevel()
 
         self.player_list.append(self.player)
         self.ms_boost_list = arcade.SpriteList[arcade.Sprite]()
@@ -56,9 +59,17 @@ class GameView(arcade.View):
         Render the screen.
         """
         self.clear()
+        
+        with self.camera.activate():
+            self.player_list.draw()
+            self.ms_boost_list.draw()
+        
         self.batch.draw()
-        self.player_list.draw()
-        self.ms_boost_list.draw()
+        
+    def format_time_mm_ss(self, total_seconds: int) -> str:
+        minutes = total_seconds // 60
+        seconds = total_seconds % 60
+        return f"{minutes:02d}:{seconds:02d}"
 
 
     def on_update(self, delta_time: float):
@@ -69,21 +80,14 @@ class GameView(arcade.View):
                                      16, 16, arcade.color.RED, 14, batch=self.batch)
             self.player.kill()
             return
-    
-        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}",
+        self.level.update(delta_time)
+        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}, Position: {self.player.position}, Time: {self.format_time_mm_ss(int(self.level.timer))}",
                                      16, 16, arcade.color.GREEN, 14, batch=self.batch)
+        self.player.update_movespeed_with_keys(self.keys)
         self.player.update_movement()
-        if self.player.center_x <= 0:
-            self.player.center_x = WINDOW_WIDTH - 1
+        self.camera.position = self.player.position
 
-        if self.player.center_x >= WINDOW_WIDTH:
-            self.player.center_x = 1
 
-        if self.player.center_y <= 0:
-            self.player.center_y = WINDOW_HEIGHT - 1
-
-        if self.player.center_y >= WINDOW_HEIGHT:
-            self.player.center_y = 1
 
         for coin in arcade.check_for_collision_with_list(self.player, self.ms_boost_list):
             coin.remove_from_sprite_lists()
@@ -96,34 +100,14 @@ class GameView(arcade.View):
             self.player.hitpoints -= 10
 
         self.engine.update()
-
-    def on_key_press(self, symbol: int, modifiers: int):
-        """
-        Called whenever a key on the keyboard is pressed.
-
-        For a full list of keys, see:
-        https://api.arcade.academy/en/latest/arcade.key.html
-        """
         
-        if symbol == arcade.key.A:
-            self.player.movement = (-self.player.movespeed, self.player.movement[1])
-        if symbol == arcade.key.S:
-            self.player.movement = (self.player.movement[0], -self.player.movespeed)
-        if symbol == arcade.key.D:
-            self.player.movement = (self.player.movespeed, self.player.movement[1])
-        if symbol == arcade.key.W:
-            self.player.movement = (self.player.movement[0], self.player.movespeed)
+    def on_key_press(self, symbol: int, modifiers: int):
+        self.keys.add(symbol)
 
 
     def on_key_release(self, symbol: int, modifiers: int):
-        if symbol == arcade.key.A:
-            self.player.movement = (0, self.player.movement[1])
-        if symbol == arcade.key.S:
-            self.player.movement = (self.player.movement[0], 0)
-        if symbol == arcade.key.D:
-            self.player.movement = (0, self.player.movement[1])
-        if symbol == arcade.key.W:
-            self.player.movement = (self.player.movement[0], 0)
+        self.keys.discard(symbol)
+
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         pass
