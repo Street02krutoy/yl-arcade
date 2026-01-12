@@ -9,6 +9,10 @@ class Player(arcade.Sprite):
         self.movespeed = 3
         self.hitpoints = 100
         self.spawn_point = (128, 256)  
+        self.xp = 0
+        self.level = 0
+        self.invulnerability = -1
+        self.xp_to_next_lvl = 10
         self.center_x, self.center_y = self.spawn_point
 
     def update_movespeed_with_keys(self, keys: set[int]):
@@ -24,8 +28,21 @@ class Player(arcade.Sprite):
     def update_movespeed(self, x: int, y: int):
         self.movement = (x, y)
 
+    def reset(self):
+        self.hitpoints = 100
+        self.movespeed = 3
+        self.center_x, self.center_y = self.spawn_point
 
-    def update_movement(self):
+    def damage(self, amount: int): 
+        if self.invulnerability >= 0:
+            return
+        self.hitpoints -= amount
+        self.invulnerability = 2
+
+
+    def update_movement(self, delta_time: float):
         self.change_y =  self.movement[1]
         self.change_x = self.movement[0]
         self.movement = (0, 0)
+        if self.invulnerability >= 0:
+            self.invulnerability -= delta_time

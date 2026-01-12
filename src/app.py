@@ -11,6 +11,7 @@ import arcade
 from pyglet.graphics import Batch
 import random
 
+from entity.enemies.base_enemy import BaseEnemy
 from entity.player import Player
 from level.level import GameLevel
 
@@ -31,11 +32,12 @@ class GameView(arcade.View):
     def __init__(self):
         super().__init__()
         self.background_color = arcade.color.GRAY_BLUE
+        self.is_lvl_up = False
         self.player = Player()
         self.camera = arcade.Camera2D()
         self.keys = set[int]()
         self.player_list = arcade.SpriteList[arcade.Sprite]()
-        self.level = GameLevel()
+        self.level = GameLevel(1000)
 
         self.player_list.append(self.player)
         self.ms_boost_list = arcade.SpriteList[arcade.Sprite]()
@@ -43,16 +45,18 @@ class GameView(arcade.View):
                                     scale=0.1))
         for item in self.ms_boost_list:
             item.center_x, item.center_y = (253, 135)  
-        
+        self.enemy_list = arcade.SpriteList[arcade.Sprite]()
         self.batch = Batch()
         
         self.engine = arcade.PhysicsEngineSimple(
             player_sprite=self.player,
         )
 
-    def reset(self):
-        """Reset the game to the initial state."""
-        pass
+    def reset(self, level: GameLevel):
+        self.player.reset()
+        self.enemy_list.clear()
+        self.level = level
+
 
     def on_draw(self):
         """
@@ -63,6 +67,7 @@ class GameView(arcade.View):
         with self.camera.activate():
             self.player_list.draw()
             self.ms_boost_list.draw()
+            self.enemy_list.draw()
         
         self.batch.draw()
         
@@ -73,6 +78,8 @@ class GameView(arcade.View):
 
 
     def on_update(self, delta_time: float):
+        if self.is_lvl_up:
+            return
         if self.player.hitpoints <= 0: 
             if self.player.dead:
                 return
@@ -81,10 +88,11 @@ class GameView(arcade.View):
             self.player.kill()
             return
         self.level.update(delta_time)
-        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}, Position: {self.player.position}, Time: {self.format_time_mm_ss(int(self.level.timer))}",
+        self.enemy_list.update(delta_time, self.player)
+        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}, Position: {self.player.position}, Time: {self.format_time_mm_ss(int(self.level.timer))}, Inv: {self.player.invulnerability}",
                                      16, 16, arcade.color.GREEN, 14, batch=self.batch)
         self.player.update_movespeed_with_keys(self.keys)
-        self.player.update_movement()
+        self.player.update_movement(delta_time)
         self.camera.position = self.player.position
 
 
@@ -97,12 +105,16 @@ class GameView(arcade.View):
             new_boost.center_x, new_boost.center_y = (random.randrange(100, WINDOW_WIDTH - 100), random.randrange(100, WINDOW_HEIGHT -100))  
             
             self.player.movespeed += 1
-            self.player.hitpoints -= 10
+            self.player.damage(10)
 
         self.engine.update()
         
     def on_key_press(self, symbol: int, modifiers: int):
         self.keys.add(symbol)
+        if symbol == arcade.key.P:
+            self.enemy_list.append(BaseEnemy(10, 2.5, "assets/deadass.png"))
+        if symbol == arcade.key.R:
+            self.reset(GameLevel(1000))
 
 
     def on_key_release(self, symbol: int, modifiers: int):
