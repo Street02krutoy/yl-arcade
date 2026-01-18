@@ -12,16 +12,19 @@ class Player(arcade.Sprite):
         self.spawn_point = (128, 256)  
         self.xp = 0
         self.level = 0
+        self.unspent_score = 0
         self.xp_to_next_lvl = 1
         self.center_x, self.center_y = self.spawn_point
 
     def update_movespeed_with_keys(self, keys: set[int]):
         if arcade.key.A in keys:
             self.update_movespeed(-self.movespeed, self.movement[1])
+            self.scale_x = 0.2
         if arcade.key.S in keys:
             self.update_movespeed(self.movement[0], -self.movespeed)
         if arcade.key.D in keys:
             self.update_movespeed(self.movespeed, self.movement[1])
+            self.scale_x = -0.2
         if arcade.key.W in keys:
             self.update_movespeed(self.movement[0], self.movespeed)
     
@@ -32,6 +35,7 @@ class Player(arcade.Sprite):
         self.xp+=xp_amount
         if self.xp >= self.xp_to_next_lvl: # type: ignore
             self.level += 1
+            self.unspent_score += 1
             old_xp = self.xp - self.xp_to_next_lvl
             self.xp = 0
             self.xp_to_next_lvl = round(1.5 ** self.level)

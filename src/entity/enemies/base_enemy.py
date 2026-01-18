@@ -79,7 +79,7 @@ class BaseEnemy(arcade.Sprite):
         self.hp -= amount
         
     def kill(self) -> None:
-        self.player.add_xp(100)
+        self.player.add_xp(1)
         return super().kill()
 
     def collision_with_player(self):

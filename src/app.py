@@ -8,6 +8,7 @@ If Python and Arcade are installed, this example can be run from the command lin
 python -m arcade.examples.starting_template
 """
 import arcade
+from arcade import gui
 from pyglet.graphics import Batch
 import random
 
@@ -15,6 +16,9 @@ from entity.enemies.base_enemy import BaseEnemy
 from entity.player import Player
 from entity.weapons.base_weapon import BaseWeapon
 from entity.weapons.circular_rotating_weapon import CircularRotatingWeapon
+from gui.level_up import LevelUpLayout
+from inventory.inventory import Inventory
+from inventory.item import InventoryWeapon
 from level.level import GameLevel
 
 WINDOW_WIDTH = 1280
@@ -34,8 +38,8 @@ class GameView(arcade.View):
     def __init__(self):
         super().__init__()
         self.background_color = arcade.color.GRAY_BLUE
-        self.is_lvl_up = False
         self.player = Player()
+        self.inventory = Inventory()
         self.camera = arcade.Camera2D()
         self.keys = set[int]()
         self.player_list = arcade.SpriteList[Player]()
@@ -46,12 +50,15 @@ class GameView(arcade.View):
         self.ms_boost_list.append(arcade.Sprite("assets/crystal.png",
                                     scale=0.1))
         self.weapons_list = arcade.SpriteList[BaseWeapon]()
-        self.weapons_list.append(CircularRotatingWeapon("assets/linuh.png", 1, 500, 0.5))
-        self.weapons_list.append(CircularRotatingWeapon("assets/linuh.png", 2, 250, 1))
+        self.inventory.add(InventoryWeapon("Пила", CircularRotatingWeapon("assets/linuh.png", 2, 200)))
         for item in self.ms_boost_list:
             item.center_x, item.center_y = (253, 135)  
         self.enemy_list = arcade.SpriteList[BaseEnemy]()
         self.batch = Batch()
+        self.ui = gui.UIManager()
+        self.level_up_layout = LevelUpLayout(self.player, (WINDOW_WIDTH, WINDOW_HEIGHT), self.inventory)
+        self.ui.add(self.level_up_layout)
+        
         
         self.engine = arcade.PhysicsEngineSimple(
             player_sprite=self.player,
@@ -70,12 +77,18 @@ class GameView(arcade.View):
         self.clear()
         
         with self.camera.activate():
-            self.player_list.draw()
             self.ms_boost_list.draw()
-            self.enemy_list.draw()
             self.weapons_list.draw()
+
+            self.enemy_list.draw()
+            self.player_list.draw()
+
             for enemy in self.enemy_list:
+
                 enemy.draw_health_bar()
+        
+        if self.ui._enabled:
+            self.ui.draw()
         
         arcade.draw_lbwh_rectangle_filled(
             10, self.height-30, self.width-20, 20, arcade.color.BLACK
@@ -93,8 +106,16 @@ class GameView(arcade.View):
 
 
     def on_update(self, delta_time: float):
-        if self.is_lvl_up:
+        if self.player.unspent_score != 0:
+            if not self.ui._enabled:
+                self.level_up_layout.update_items()
+                self.ui.enable()
             return
+        for item in self.inventory.get():
+            if not item.weapon in self.weapons_list:
+                self.weapons_list.append(item.weapon)
+        if self.ui._enabled:
+                self.ui.disable()
         if self.player.hitpoints <= 0: 
             if self.player.dead:
                 return
