@@ -3,7 +3,7 @@ import arcade
 
 class Player(arcade.Sprite):
     def __init__(self) -> None:
-        super().__init__("assets/hero.png", 0.2)
+        super().__init__("assets/hero completed.png", 0.2)
         self.dead = False
         self.movement: tuple[int, int] = (0, 0)
         self.movespeed = 3
