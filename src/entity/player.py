@@ -3,7 +3,7 @@ import arcade
 
 class Player(arcade.Sprite):
     def __init__(self) -> None:
-        super().__init__("assets/hero.png", 0.2)
+        super().__init__("assets/hero left.png", 1)
         self.dead = False
         self.movement: tuple[int, int] = (0, 0)
         self.movespeed = 3
@@ -19,12 +19,12 @@ class Player(arcade.Sprite):
     def update_movespeed_with_keys(self, keys: set[int]):
         if arcade.key.A in keys:
             self.update_movespeed(-self.movespeed, self.movement[1])
-            self.scale_x = 0.2
+            self.scale_x = 1
         if arcade.key.S in keys:
             self.update_movespeed(self.movement[0], -self.movespeed)
         if arcade.key.D in keys:
             self.update_movespeed(self.movespeed, self.movement[1])
-            self.scale_x = -0.2
+            self.scale_x = -1
         if arcade.key.W in keys:
             self.update_movespeed(self.movement[0], self.movespeed)
     
