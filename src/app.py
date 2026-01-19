@@ -23,7 +23,7 @@ from level.level import GameLevel
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
-WINDOW_TITLE = "Fluff Apocalypse"
+WINDOW_TITLE = "Starting Template"
 
 
 class GameView(arcade.View):
@@ -77,12 +77,14 @@ class GameView(arcade.View):
         self.clear()
         
         with self.camera.activate():
-            self.weapons_list.draw()
             self.ms_boost_list.draw()
+            self.weapons_list.draw()
+
             self.enemy_list.draw()
             self.player_list.draw()
 
             for enemy in self.enemy_list:
+
                 enemy.draw_health_bar()
         
         if self.ui._enabled:
