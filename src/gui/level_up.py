@@ -4,6 +4,7 @@ from arcade import gui
 from entity.player import Player
 from entity.weapons.weapon_list import WeaponList
 from inventory.inventory import Inventory
+from inventory.item import InventoryWeapon
 
 
 class LevelUpLayout(gui.UIBoxLayout):
@@ -18,6 +19,7 @@ class LevelUpLayout(gui.UIBoxLayout):
             space_between=12
         )
         self.items = []
+        self.stats = []
 
         # Buttons
         self.button_1 = gui.UIFlatButton(
@@ -51,7 +53,7 @@ class LevelUpLayout(gui.UIBoxLayout):
             if not self.items[button_index] in self.inventory.get():
                 self.inventory.add(self.items[button_index])
             else:
-                self.items[button_index].weapon.scale_random_stat()
+                self.items[button_index].weapon.set_stat(self.stats[button_index][0], self.items[button_index].weapon.get_stat(self.stats[button_index][0])+self.stats[button_index][1])
             self.update_items()
         print(f"Button {button_index} clicked")
 
@@ -59,12 +61,20 @@ class LevelUpLayout(gui.UIBoxLayout):
     def update_items(self):
         inv = self.inventory.get()
         self.items = random.sample(tuple(inv), min(len(inv),3))
+        print(self.stats)
 
         while len(self.items) != 3:
             self.items.append(WeaponList().get_random_weapon())
+        
+        self.stats = list(map(lambda x: (x.weapon.get_random_stat(), random.randint(5, 20)/10), self.items))
 
-        self.button_1.text = self.items[0].name
-        self.button_2.text = self.items[1].name
-        self.button_3.text = self.items[2].name
+
+        self.button_1.text = button_text(self.items[0], self.stats[0])
+        self.button_2.text = button_text(self.items[1], self.stats[1])
+        self.button_3.text = button_text(self.items[2], self.stats[2])
 
         pass
+
+    
+def button_text(item: InventoryWeapon, stat: tuple[str, float]):
+    return f"{item.name} {stat[0]} {item.weapon.get_stat(stat[0])} + {stat[1]} "
