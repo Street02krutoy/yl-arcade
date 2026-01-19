@@ -15,6 +15,7 @@ class Player(arcade.Sprite):
         self.unspent_score = 0
         self.xp_to_next_lvl = 1
         self.center_x, self.center_y = self.spawn_point
+        self.textures = [arcade.load_texture("assets/hero completed.png"), ]
 
     def update_movespeed_with_keys(self, keys: set[int]):
         if arcade.key.A in keys:

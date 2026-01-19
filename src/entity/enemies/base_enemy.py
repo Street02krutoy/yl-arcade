@@ -7,8 +7,8 @@ PathOrTexture = str | arcade.Path | bytes | arcade.Texture | None # type: ignore
 
 
 class BaseEnemy(arcade.Sprite):
-    def __init__(self, damage: float, movespeed: float, texture: PathOrTexture, attack_speed: float, hp: float, player: Player):
-        super().__init__(texture)
+    def __init__(self, damage: float, movespeed: float, texture: str, attack_speed: float, hp: float, player: Player):
+        super().__init__()
         self._damage = damage
         self.movespeed = movespeed
         self.attack_speed = attack_speed
@@ -16,6 +16,14 @@ class BaseEnemy(arcade.Sprite):
         self.hp = hp
         self.player = player
         self.attack_cd = -1.0
+        self.hurt_timer = -1.0
+
+
+        self.textures = []
+        self.textures.append(arcade.load_texture(f"assets/enemy/{texture}/idle.png"))
+        self.textures.append(arcade.load_texture(f"assets/enemy/{texture}/hurt.png"))
+
+        self.texture = self.textures[0]
 
     def draw_health_bar(self):
         bar_width = self.width
@@ -45,6 +53,11 @@ class BaseEnemy(arcade.Sprite):
         if self.hp <= 0:
             self.kill()
         self.attack_cd -= delta_time
+        if self.hurt_timer > 0:
+            self.hurt_timer -= delta_time
+            if self.hurt_timer <= 0:
+                self.texture = self.textures[0]
+
         dx = self.player.center_x - self.center_x
         dy = self.player.center_y - self.center_y
 
@@ -75,6 +88,9 @@ class BaseEnemy(arcade.Sprite):
         
     
     def damage(self, amount: float):
+        self.hurt_timer = 1.0
+        self.texture = self.textures[1]
+
         self.hp -= amount
         
     def kill(self) -> None:

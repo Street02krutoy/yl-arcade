@@ -3,6 +3,7 @@ import random
 
 import arcade
 from entity.enemies.base_enemy import BaseEnemy
+from entity.enemies.enemy_cloud import EnemyCloud
 from entity.player import Player
 
 
@@ -22,12 +23,15 @@ class GameLevel:
             self.spawn_timer = self.spawn_multiplier * (self.spawn_base ** self.enemies_spawned)
         self.timer -= delta_time
 
+    def get_enemies_list(self, player:Player) -> list[BaseEnemy]:
+        return [EnemyCloud(player)]
+
     def spawn_enemy(self, player: Player, enemies_list: arcade.SpriteList[BaseEnemy]):
         distance = random.randint(250, 1000)
         angle = random.uniform(0, 2 * math.pi)
-        enemy_damage = random.randint(6, 12)
 
-        enemy = BaseEnemy(enemy_damage,  abs(9-enemy_damage), "assets/deadass.png", enemy_damage/2, 15 - enemy_damage, player)
+
+        enemy = random.choice(self.get_enemies_list(player))
 
         enemy.center_x = math.sin(angle)*distance+player.center_x
         enemy.center_y = math.cos(angle)*distance+player.center_y

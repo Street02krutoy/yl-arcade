@@ -48,7 +48,7 @@ class GameView(arcade.View):
         self.player_list.append(self.player)
         self.ms_boost_list = arcade.SpriteList[arcade.Sprite]()
         self.ms_boost_list.append(arcade.Sprite("assets/green crystal.png",
-                                    scale=0.1))
+                                    scale=1))
         self.weapons_list = arcade.SpriteList[BaseWeapon]()
         self.inventory.add(InventoryWeapon("Пила", CircularRotatingWeapon("assets/linuh.png", 2, 200)))
         for item in self.ms_boost_list:
@@ -136,7 +136,7 @@ class GameView(arcade.View):
         for coin in arcade.check_for_collision_with_list(self.player, self.ms_boost_list):
             coin.remove_from_sprite_lists()
             new_boost = arcade.Sprite("assets/green crystal.png",
-                                    scale=0.1)
+                                    scale=1)
             self.ms_boost_list.append(new_boost)
             new_boost.center_x, new_boost.center_y = (random.randrange(100, WINDOW_WIDTH - 100), random.randrange(100, WINDOW_HEIGHT -100))  
             
