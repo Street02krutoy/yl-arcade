@@ -48,7 +48,10 @@ class LevelUpLayout(gui.UIBoxLayout):
     def on_click(self, event: gui.UIOnClickEvent, button_index: int) -> None:
         if self.player.unspent_score > 0:
             self.player.unspent_score -= 1
-            self.inventory.add(self.items[button_index])
+            if not self.items[button_index] in self.inventory.get():
+                self.inventory.add(self.items[button_index])
+            else:
+                self.items[button_index].weapon.scale_random_stat()
             self.update_items()
         print(f"Button {button_index} clicked")
 

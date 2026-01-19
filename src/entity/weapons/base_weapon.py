@@ -1,3 +1,4 @@
+import random
 import arcade
 
 from entity.enemies.base_enemy import BaseEnemy
@@ -20,6 +21,11 @@ class BaseWeapon(arcade.Sprite):
     def set_stat(self, name: str, value: float) -> None:
         self._stats[name] = value
 
+    def scale_random_stat(self) -> None:
+        stat= random.choice(list(self._stats.keys()))
+        print(stat)
+        self._stats[stat] += random.uniform(0.8, 1.2)
+
     def update(self, delta_time: float, enemies_list: arcade.SpriteList[BaseEnemy], player: Player): # type: ignore
         super().update(delta_time) # type: ignore
         for enemy in list(self.hit_timers):
@@ -30,6 +36,6 @@ class BaseWeapon(arcade.Sprite):
         for enemy in collisions:
             if not self.hit_timers.get(enemy):
                 print(self.get_stats())
-                self.hit_timers[enemy] = self.get_stat("attack_rate")
+                self.hit_timers[enemy] = 1/self.get_stat("attack_rate")
                 enemy.damage(self.damage)
           
