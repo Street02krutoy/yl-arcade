@@ -7,11 +7,11 @@ from entity.weapons.base_weapon import BaseWeapon
 
 
 class CircularRotatingWeapon(BaseWeapon):
-    def __init__(self, path_or_texture: str | Path | bytes | Texture = "assets/linuh.png", damage: float = 3, radius: float = 50, speed: float = 1) -> None:
+    def __init__(self, path_or_texture: str | Path | bytes | Texture = "assets/linuh.png", damage: float = 3, radius: float = 100, speed: float = 1) -> None:
         super().__init__(path_or_texture, damage)
         self.set_stat("radius", radius)
         self.set_stat("scale", 1)
-        self.set_stat("attack_rate", 0.5)
+        self.set_stat("attack_rate", 5)
         self.set_stat("speed", speed)
         self.angle = math.pi
 
