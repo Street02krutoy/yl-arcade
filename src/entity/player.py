@@ -3,7 +3,7 @@ import arcade
 
 class Player(arcade.Sprite):
     def __init__(self) -> None:
-        super().__init__("assets/hero completed.png", 1)
+        super().__init__(scale=1)
         self.dead = False
         self.movement: tuple[int, int] = (0, 0)
         self.movespeed = 3
@@ -15,7 +15,8 @@ class Player(arcade.Sprite):
         self.unspent_score = 0
         self.xp_to_next_lvl = 1
         self.center_x, self.center_y = self.spawn_point
-        self.textures = [arcade.load_texture("assets/hero completed.png"), ]
+        self.textures = [arcade.load_texture("assets/hero/idle_front.png"), ]
+        self.texture = self.textures[0]
 
     def update_movespeed_with_keys(self, keys: set[int]):
         if arcade.key.A in keys:
