@@ -23,7 +23,7 @@ from level.level import GameLevel
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
-WINDOW_TITLE = "Starting Template"
+WINDOW_TITLE = "Fluff Apocalypse"
 
 
 class GameView(arcade.View):
