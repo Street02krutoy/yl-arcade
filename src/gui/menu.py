@@ -1,7 +1,4 @@
-"""
-Меню игры с выбором персонажа и настройками
-Использует встроенные звуки Arcade
-"""
+
 import arcade
 from typing import Callable
 import json
@@ -593,4 +590,5 @@ __all__ = [
     'SettingsView',
     'GameSettings',
     'GameSoundManager'
+
 ]
