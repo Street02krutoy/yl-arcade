@@ -372,20 +372,6 @@ class MenuView(arcade.View):
                 "health": 120,
                 "speed": 1.0,
                 "description": "Сильный и выносливый боец"
-            },
-            "mage": {
-                "name": "Маг",
-                "damage": 25,
-                "health": 80,
-                "speed": 1.1,
-                "description": "Мощные заклинания, но мало здоровья"
-            },
-            "archer": {
-                "name": "Лучник",
-                "damage": 20,
-                "health": 90,
-                "speed": 1.2,
-                "description": "Быстрый и меткий стрелок"
             }
         }
 

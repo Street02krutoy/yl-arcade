@@ -20,6 +20,7 @@ from gui.level_up import LevelUpLayout
 from inventory.inventory import Inventory
 from inventory.item import InventoryWeapon
 from level.level import GameLevel
+from gui.menu import MenuView
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -44,6 +45,7 @@ class GameView(arcade.View):
         self.keys = set[int]()
         self.player_list = arcade.SpriteList[Player]()
         self.level = GameLevel()
+        self.start_menu = MenuView()
 
         self.player_list.append(self.player)
         self.ms_boost_list = arcade.SpriteList[arcade.Sprite]()
@@ -53,14 +55,14 @@ class GameView(arcade.View):
         self.inventory.add(InventoryWeapon("Пила", CircularRotatingWeapon("assets/dota.png",
                                                                           2, 200)))
         for item in self.ms_boost_list:
-            item.center_x, item.center_y = (253, 135)  
+            item.center_x, item.center_y = (253, 135)
         self.enemy_list = arcade.SpriteList[BaseEnemy]()
         self.batch = Batch()
         self.ui = gui.UIManager()
         self.level_up_layout = LevelUpLayout(self.player, (WINDOW_WIDTH, WINDOW_HEIGHT), self.inventory)
         self.ui.add(self.level_up_layout)
-        
-        
+
+
         self.engine = arcade.PhysicsEngineSimple(
             player_sprite=self.player,
         )
@@ -76,7 +78,7 @@ class GameView(arcade.View):
         Render the screen.
         """
         self.clear()
-        
+
         with self.camera.activate():
             self.ms_boost_list.draw()
             self.weapons_list.draw()
@@ -87,19 +89,19 @@ class GameView(arcade.View):
             for enemy in self.enemy_list:
 
                 enemy.draw_health_bar()
-        
+
         if self.ui._enabled:
             self.ui.draw()
-        
+
         arcade.draw_lbwh_rectangle_filled(
             10, self.height-30, self.width-20, 20, arcade.color.BLACK
         )
         arcade.draw_lbwh_rectangle_filled(
             10, self.height-30, (self.width-20)*self.player.hitpoints/100, 20, arcade.color.ROSE_RED
         )
-        
+
         self.batch.draw()
-        
+
     def format_time_mm_ss(self, total_seconds: int) -> str:
         minutes = total_seconds // 60
         seconds = total_seconds % 60
@@ -118,7 +120,7 @@ class GameView(arcade.View):
                 self.weapons_list.append(item.weapon)
         if self.ui._enabled:
                 self.ui.disable()
-        if self.player.hitpoints <= 0: 
+        if self.player.hitpoints <= 0:
             if self.player.dead:
                 return
             self.text_info = arcade.Text(f"umer",
@@ -143,12 +145,12 @@ class GameView(arcade.View):
             new_boost = arcade.Sprite("assets/green crystal.png",
                                     scale=1)
             self.ms_boost_list.append(new_boost)
-            new_boost.center_x, new_boost.center_y = (random.randrange(100, WINDOW_WIDTH - 100), random.randrange(100, WINDOW_HEIGHT -100))  
-            
+            new_boost.center_x, new_boost.center_y = (random.randrange(100, WINDOW_WIDTH - 100), random.randrange(100, WINDOW_HEIGHT -100))
+
             self.player.movespeed += 1
 
         self.engine.update()
-        
+
     def on_key_press(self, symbol: int, modifiers: int):
         self.keys.add(symbol)
         if symbol == arcade.key.R:
