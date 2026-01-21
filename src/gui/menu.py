@@ -1,4 +1,3 @@
-
 import arcade
 from typing import Callable
 import json

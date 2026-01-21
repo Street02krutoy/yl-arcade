@@ -50,7 +50,7 @@ class GameView(arcade.View):
         self.ms_boost_list.append(arcade.Sprite("assets/green crystal.png",
                                     scale=1))
         self.weapons_list = arcade.SpriteList[BaseWeapon]()
-        self.inventory.add(InventoryWeapon("Пила", CircularRotatingWeapon("assets/linuh.png", 2, 200)))
+        self.inventory.add(InventoryWeapon("Пила", CircularRotatingWeapon("assets/dota.png", 2, 200)))
         for item in self.ms_boost_list:
             item.center_x, item.center_y = (253, 135)  
         self.enemy_list = arcade.SpriteList[BaseEnemy]()
@@ -126,7 +126,11 @@ class GameView(arcade.View):
         self.level.update(delta_time, self.player, self.enemy_list)
         self.weapons_list.update(delta_time, self.enemy_list, self.player) # type: ignore
         self.enemy_list.update(delta_time, self.enemy_list) # type: ignore
-        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}, Position: {self.player.position}, Time: {self.format_time_mm_ss(int(self.level.timer))}, Spawn: {round(self.level.spawn_timer, 2)}, XP: {self.player.xp}/{self.player.xp_to_next_lvl}({self.player.level})",
+        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}"
+                                     f", Position: {self.player.position}, "
+                                     f"Time: {self.format_time_mm_ss(int(self.level.timer))}, "
+                                     f"Spawn: {round(self.level.spawn_timer, 2)}, "
+                                     f"XP: {self.player.xp}/{self.player.xp_to_next_lvl}({self.player.level})",
                                      16, 16, arcade.color.GREEN, 14, batch=self.batch)
         self.player.update_movespeed_with_keys(self.keys)
         self.player.update_movement(delta_time)
