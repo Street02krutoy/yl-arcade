@@ -21,10 +21,9 @@ class BaseWeapon(arcade.Sprite):
     def set_stat(self, name: str, value: float) -> None:
         self._stats[name] = value
 
-    def scale_random_stat(self) -> None:
-        stat= random.choice(list(self._stats.keys()))
-        print(stat)
-        self._stats[stat] += random.uniform(0.8, 1.2)
+    def get_random_stat(self) -> str:
+        return random.choice(list(self._stats.keys()))
+        
 
     def update(self, delta_time: float, enemies_list: arcade.SpriteList[BaseEnemy], player: Player): # type: ignore
         super().update(delta_time) # type: ignore

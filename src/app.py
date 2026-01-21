@@ -106,6 +106,7 @@ class GameView(arcade.View):
 
 
     def on_update(self, delta_time: float):
+        self.camera.position = self.player.position
         if self.player.unspent_score != 0:
             if not self.ui._enabled:
                 self.level_up_layout.update_items()
@@ -129,7 +130,6 @@ class GameView(arcade.View):
                                      16, 16, arcade.color.GREEN, 14, batch=self.batch)
         self.player.update_movespeed_with_keys(self.keys)
         self.player.update_movement(delta_time)
-        self.camera.position = self.player.position
 
 
 
