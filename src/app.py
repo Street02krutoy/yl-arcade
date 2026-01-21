@@ -23,7 +23,7 @@ from level.level import GameLevel
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
-WINDOW_TITLE = "Starting Template"
+WINDOW_TITLE = "Fluff Apocalypse"
 
 
 class GameView(arcade.View):
@@ -50,7 +50,8 @@ class GameView(arcade.View):
         self.ms_boost_list.append(arcade.Sprite("assets/green crystal.png",
                                     scale=1))
         self.weapons_list = arcade.SpriteList[BaseWeapon]()
-        self.inventory.add(InventoryWeapon("Пила", CircularRotatingWeapon("assets/dota.png", 2, 200)))
+        self.inventory.add(InventoryWeapon("Пила", CircularRotatingWeapon("assets/dota.png",
+                                                                          2, 200)))
         for item in self.ms_boost_list:
             item.center_x, item.center_y = (253, 135)  
         self.enemy_list = arcade.SpriteList[BaseEnemy]()
