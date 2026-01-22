@@ -77,7 +77,11 @@ class CharacterSelectView(arcade.View):
             text="Назад",
             width=BUTTON_WIDTH,
             height=BUTTON_HEIGHT,
-            style={"font_size": 20}
+            style={
+                "normal": {"font_size": 20},
+                "hover": {"font_size": 20},
+                "pressed": {"font_size": 20}
+            }
         )
         self.back_button.on_click = self.go_back
         self.back_button.center_x = MENU_WIDTH // 2
@@ -92,13 +96,24 @@ class CharacterSelectView(arcade.View):
         ]
 
         for name, char_type, color, x, y in characters:
+            button_color = color if self.selected_character == char_type else arcade.color.GRAY
             button = arcade.gui.UIFlatButton(
                 text=name,
                 width=200,
                 height=80,
                 style={
-                    "font_size": 18,
-                    "bg_color": color if self.selected_character == char_type else arcade.color.GRAY
+                    "normal": {
+                        "font_size": 18,
+                        "bg_color": button_color
+                    },
+                    "hover": {
+                        "font_size": 18,
+                        "bg_color": color
+                    },
+                    "pressed": {
+                        "font_size": 18,
+                        "bg_color": arcade.color.DARK_GRAY
+                    }
                 }
             )
             button.on_click = lambda event, ct=char_type: self.select_character(ct)
@@ -216,14 +231,24 @@ class SettingsView(arcade.View):
         self.back_button = arcade.gui.UIFlatButton(
             text="Назад",
             width=BUTTON_WIDTH,
-            height=BUTTON_HEIGHT
+            height=BUTTON_HEIGHT,
+            style={
+                "normal": {"font_size": 16},
+                "hover": {"font_size": 16},
+                "pressed": {"font_size": 16}
+            }
         )
         self.back_button.on_click = self.go_back
 
         self.save_button = arcade.gui.UIFlatButton(
             text="Сохранить",
             width=BUTTON_WIDTH,
-            height=BUTTON_HEIGHT
+            height=BUTTON_HEIGHT,
+            style={
+                "normal": {"font_size": 16},
+                "hover": {"font_size": 16},
+                "pressed": {"font_size": 16}
+            }
         )
         self.save_button.on_click = self.save_settings
 
@@ -400,11 +425,27 @@ class MenuView(arcade.View):
                 width=BUTTON_WIDTH,
                 height=BUTTON_HEIGHT,
                 style={
-                    "font_size": 20,
-                    "bg_color": arcade.color.BLUE_GRAY,
-                    "font_color": arcade.color.WHITE,
-                    "border_color": arcade.color.GOLD,
-                    "border_width": 2
+                    "normal": {
+                        "font_size": 20,
+                        "bg_color": arcade.color.BLUE_GRAY,
+                        "font_color": arcade.color.WHITE,
+                        "border_color": arcade.color.GOLD,
+                        "border_width": 2
+                    },
+                    "hover": {
+                        "font_size": 20,
+                        "bg_color": arcade.color.SLATE_GRAY,
+                        "font_color": arcade.color.YELLOW,
+                        "border_color": arcade.color.GOLD,
+                        "border_width": 2
+                    },
+                    "pressed": {
+                        "font_size": 20,
+                        "bg_color": arcade.color.DARK_SLATE_GRAY,
+                        "font_color": arcade.color.WHITE,
+                        "border_color": arcade.color.YELLOW,
+                        "border_width": 2
+                    }
                 }
             )
             button.on_click = lambda event, cb=callback: cb()

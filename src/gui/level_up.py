@@ -6,6 +6,10 @@ from entity.weapons.weapon_list import WeaponList
 from inventory.inventory import Inventory
 from inventory.item import InventoryWeapon
 
+LOC = {"radius":"радиус",
+"scale": "размер",
+"attack_rate": "скорость атаки",
+"speed": "скорость", "damage": "урон"}
 
 class LevelUpLayout(gui.UIBoxLayout):
     def __init__(self, player: Player, screen_size: tuple[int, int], inventory: Inventory):
@@ -19,7 +23,7 @@ class LevelUpLayout(gui.UIBoxLayout):
             space_between=12
         )
         self.items = []
-        self.stats = []
+        self.stats: list[tuple[str, float]] = []
 
         # Buttons
         self.button_1 = gui.UIFlatButton(
@@ -63,10 +67,11 @@ class LevelUpLayout(gui.UIBoxLayout):
         self.items = random.sample(tuple(inv), min(len(inv),3))
         print(self.stats)
 
+        self.stats = list(map(lambda x: (x.weapon.get_random_stat(), random.randint(5, 20)/10), self.items))
+
         while len(self.items) != 3:
             self.items.append(WeaponList().get_random_weapon())
-        
-        self.stats = list(map(lambda x: (x.weapon.get_random_stat(), random.randint(5, 20)/10), self.items))
+            self.stats.append(("new", 0))        
 
 
         self.button_1.text = button_text(self.items[0], self.stats[0])
@@ -77,4 +82,6 @@ class LevelUpLayout(gui.UIBoxLayout):
 
     
 def button_text(item: InventoryWeapon, stat: tuple[str, float]):
-    return f"{item.name} {stat[0]} {item.weapon.get_stat(stat[0])} + {stat[1]} "
+    if stat[0] == "new":
+        return f"Создать {item.name}"
+    return f"{item.name}: {LOC[stat[0]]} +{stat[1]} "
