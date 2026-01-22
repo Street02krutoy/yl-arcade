@@ -16,7 +16,9 @@ from entity.enemies.base_enemy import BaseEnemy
 from entity.player import Player
 from entity.weapons.base_weapon import BaseWeapon
 from entity.weapons.circular_rotating_weapon import CircularRotatingWeapon
+from gui.finish_menu import FinishMenu
 from gui.level_up import LevelUpLayout
+from gui.menu import MenuView
 from inventory.inventory import Inventory
 from inventory.item import InventoryWeapon
 from level.level import GameLevel
@@ -76,10 +78,10 @@ class GameView(arcade.View):
         Render the screen.
         """
         self.clear()
-        arcade.draw_sprite(self.level.background)
+        
 
         with self.camera.activate():
-            
+            self.level.background_sprites.draw()
             self.ms_boost_list.draw()
             self.weapons_list.draw()
 
@@ -110,6 +112,7 @@ class GameView(arcade.View):
 
     def on_update(self, delta_time: float):
         self.camera.position = self.player.position
+        self.level.update_background_tiles(self.player)
         if self.player.unspent_score != 0:
             if not self.ui._enabled:
                 self.level_up_layout.update_items()
@@ -121,17 +124,32 @@ class GameView(arcade.View):
         if self.ui._enabled:
                 self.ui.disable()
         if self.player.hitpoints <= 0:
+            finish_menu = FinishMenu(
+                killed_enemies=self.level.enemies_spawned,
+                won=False,
+                on_restart=lambda: self.restart_game,
+                on_menu=lambda: None
+            )
+            self.window.show_view(finish_menu)
             if self.player.dead:
                 return
-            self.text_info = arcade.Text(f"umer",
-                                     16, 16, arcade.color.RED, 14, batch=self.batch)
-            return
+        if self.level.timer <= 0:
+            if self.level.count == 3:
+                finish_menu = FinishMenu(
+                    killed_enemies=self.level.enemies_spawned,
+                    won=True,
+                    on_restart=lambda: self.restart_game,
+                    on_menu=lambda: None
+                )
+                self.window.show_view(finish_menu)
+            else:
+                self.level = GameLevel(self.level.count+1)
         self.level.update(delta_time, self.player, self.enemy_list)
         self.weapons_list.update(delta_time, self.enemy_list, self.player) # type: ignore
         self.enemy_list.update(delta_time, self.enemy_list) # type: ignore
         self.text_info = arcade.Text( 
                                      f"Время: {self.format_time_mm_ss(int(self.level.timer))}, "
-                                     f"Опыт: {self.player.xp}/{self.player.xp_to_next_lvl}({self.player.level})",
+                                     f"Опыт: {self.player.xp}/{self.player.xp_to_next_lvl}, Уровень: {self.player.level}",
                                      16, 16, arcade.color.DARK_GREEN, 14, batch=self.batch)
         self.player.update_movespeed_with_keys(self.keys)
         self.player.update_movement(delta_time)
@@ -143,7 +161,7 @@ class GameView(arcade.View):
             new_boost = arcade.Sprite("assets/green crystal.png",
                                     scale=1)
             self.ms_boost_list.append(new_boost)
-            new_boost.center_x, new_boost.center_y = (random.randrange(100, WINDOW_WIDTH - 100), random.randrange(100, WINDOW_HEIGHT -100))
+            new_boost.center_x, new_boost.center_y = (random.uniform(self.player.center_x+1000, self.player.center_x - 1000), random.uniform(self.player.center_y+1000, self.player.center_y - 1000))
 
             self.player.movespeed += 1
 
@@ -155,11 +173,31 @@ class GameView(arcade.View):
             self.reset(GameLevel(1))
         if symbol == arcade.key.KEY_1:
             self.level = GameLevel(1)
+            self.enemy_list.clear()
         if symbol == arcade.key.KEY_2:
             self.level = GameLevel(2)
+            self.enemy_list.clear()
         if symbol == arcade.key.KEY_3:
             self.level = GameLevel(3)
+            self.enemy_list.clear()
+        if symbol == arcade.key.O:
+            finish_menu = FinishMenu(
+                killed_enemies=self.level.enemies_spawned,
+                won=False,
+                on_restart=lambda: self.restart_game,
+                on_menu=lambda: self.show_menu
+            )
+            self.window.show_view(finish_menu)
+            if self.player.dead:
+                return
 
+    def restart_game(self):
+        game = GameView()
+        self.window.show_view(game)
+
+    def show_menu(self):
+        menu = MenuView(self.restart_game)
+        self.window.show_view(menu)
 
     def on_key_release(self, symbol: int, modifiers: int):
         self.keys.discard(symbol)
@@ -178,13 +216,15 @@ def main():
 
     game = GameView()
     
+    
     def start():
         window.hide_view()
         window.show_view(game)
+    menu = MenuView(start)
 
     # menu = MenuView(start)
-    start()
-
+    window.show_view(menu)
+    
 
     arcade.run()
 

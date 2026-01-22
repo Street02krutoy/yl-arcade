@@ -7,8 +7,8 @@ from entity.weapons.base_weapon import BaseWeapon
 
 
 class BurningWeapon(BaseWeapon):
-    def __init__(self, path_or_texture: str | Path | bytes | Texture = "assets/weapons/circular.png", damage: float = 1, radius: float = 200, attack_rate: float = 1) -> None:
-        super().__init__(path_or_texture, damage)
+    def __init__(self, path_or_texture: str | Path | bytes | Texture = "assets/weapons/circular.png", radius: float = 200, attack_rate: float = 1) -> None:
+        super().__init__(path_or_texture, 0.1)
         self.set_stat("radius", radius)
         self.set_stat("scale", radius/100)
         self.set_stat("attack_rate", attack_rate)

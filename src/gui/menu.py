@@ -1,4 +1,5 @@
 import arcade
+from arcade import gui
 from typing import Callable
 import json
 import os
@@ -12,6 +13,8 @@ BUTTON_HEIGHT = 60
 
 class GameSettings:
     """Класс для управления настройками игры"""
+
+    
 
     def __init__(self):
         self.settings_file = "game_settings.json"
@@ -31,7 +34,6 @@ class GameSettings:
             if os.path.exists(self.settings_file):
                 with open(self.settings_file, 'r') as f:
                     loaded = json.load(f)
-                    # Объединяем с дефолтными, если каких-то ключей нет
                     for key, value in self.default_settings.items():
                         if key not in loaded:
                             loaded[key] = value
@@ -60,32 +62,33 @@ class GameSettings:
 
 
 class CharacterSelectView(arcade.View):
-    """Экран выбора персонажа"""
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
+        self.ui_manager.on_mouse_press(x, y, button, modifiers)
 
+    def on_mouse_release(self, x: int, y: int, button: int, modifiers: int):
+        self.ui_manager.on_mouse_release(x, y, button, modifiers)
+
+    def on_mouse_motion(self, x: int, y: int, dx: int, dy: int):
+        self.ui_manager.on_mouse_motion(x, y, dx, dy)
     def __init__(self, menu_view, selected_character: str):
         super().__init__()
         self.menu_view = menu_view
         self.selected_character = selected_character
         self.background_color = arcade.color.DARK_SLATE_GRAY
+        self.ui_manager = gui.UIManager()
 
-        # Кнопки выбора персонажа
         self.character_buttons = []
         self.create_character_buttons()
 
-        # Кнопка возврата
-        self.back_button = arcade.gui.UIFlatButton(
+        self.back_button = gui.UIFlatButton(
+            x=MENU_WIDTH // 2 - BUTTON_WIDTH // 2,
+            y=50,
             text="Назад",
             width=BUTTON_WIDTH,
-            height=BUTTON_HEIGHT,
-            style={
-                "normal": {"font_size": 20},
-                "hover": {"font_size": 20},
-                "pressed": {"font_size": 20}
-            }
+            height=BUTTON_HEIGHT
         )
         self.back_button.on_click = self.go_back
-        self.back_button.center_x = MENU_WIDTH // 2
-        self.back_button.center_y = 100
+        self.ui_manager.add(self.back_button)
 
     def create_character_buttons(self):
         """Создание кнопок выбора персонажа"""
@@ -97,29 +100,16 @@ class CharacterSelectView(arcade.View):
 
         for name, char_type, color, x, y in characters:
             button_color = color if self.selected_character == char_type else arcade.color.GRAY
-            button = arcade.gui.UIFlatButton(
+            button = gui.UIFlatButton(
+                x=x - 100,
+                y=y - 40,
                 text=name,
                 width=200,
-                height=80,
-                style={
-                    "normal": {
-                        "font_size": 18,
-                        "bg_color": button_color
-                    },
-                    "hover": {
-                        "font_size": 18,
-                        "bg_color": color
-                    },
-                    "pressed": {
-                        "font_size": 18,
-                        "bg_color": arcade.color.DARK_GRAY
-                    }
-                }
+                height=80
             )
             button.on_click = lambda event, ct=char_type: self.select_character(ct)
-            button.center_x = x
-            button.center_y = y
             self.character_buttons.append(button)
+            self.ui_manager.add(button)
 
     def select_character(self, character_type: str):
         """Выбор персонажа"""
@@ -129,7 +119,6 @@ class CharacterSelectView(arcade.View):
         self.selected_character = character_type
         self.menu_view.selected_character = character_type
 
-        # Обновляем стиль кнопок
         for button in self.character_buttons:
             if button.text.lower() == character_type:
                 button.style["bg_color"] = arcade.color.GOLD
@@ -146,13 +135,14 @@ class CharacterSelectView(arcade.View):
         """Отрисовка экрана выбора персонажа"""
         self.clear()
 
-        # Фон
-        arcade.draw_lrwh_rectangle_textured(
-            0, 0, MENU_WIDTH, MENU_HEIGHT,
-            arcade.load_texture(":resources:images/backgrounds/abstract_2.jpg")
+        arcade.draw_lbwh_rectangle_filled(
+            0,
+            0,
+            MENU_WIDTH,
+            MENU_HEIGHT,
+            arcade.color.DARK_SLATE_GRAY
         )
 
-        # Заголовок
         arcade.draw_text(
             "ВЫБОР ПЕРСОНАЖА",
             MENU_WIDTH // 2,
@@ -163,7 +153,6 @@ class CharacterSelectView(arcade.View):
             bold=True
         )
 
-        # Описание выбранного персонажа
         character = self.menu_view.characters[self.selected_character]
         arcade.draw_text(
             f"Здоровье: {character['health']} | Урон: {character['damage']} | Скорость: {character['speed']}",
@@ -174,16 +163,7 @@ class CharacterSelectView(arcade.View):
             anchor_x="center"
         )
 
-        # Кнопки
-        for button in self.character_buttons:
-            button.draw()
-        self.back_button.draw()
-
-    def on_mouse_press(self, x, y, button, modifiers):
-        """Обработка нажатия мыши"""
-        for ui_button in self.character_buttons + [self.back_button]:
-            if ui_button.collides_with_point((x, y)):
-                ui_button.on_click(None)
+        self.ui_manager.draw()
 
     def on_key_press(self, symbol, modifiers):
         """Обработка нажатия клавиш"""
@@ -200,87 +180,77 @@ class CharacterSelectView(arcade.View):
 
 
 class SettingsView(arcade.View):
-    """Экран настроек"""
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
+        self.ui_manager.on_mouse_press(x, y, button, modifiers)
+
+    def on_mouse_release(self, x: int, y: int, button: int, modifiers: int):
+        self.ui_manager.on_mouse_release(x, y, button, modifiers)
+
+    def on_mouse_motion(self, x: int, y: int, dx: int, dy: int):
+        self.ui_manager.on_mouse_motion(x, y, dx, dy)
 
     def __init__(self, menu_view, settings: dict):
         super().__init__()
         self.menu_view = menu_view
         self.settings = settings
         self.background_color = arcade.color.DARK_GREEN
+        self.ui_manager = gui.UIManager()
 
-        # Ползунки настроек
-        self.sound_slider = arcade.gui.UIInputText(
+        self.sound_slider = gui.UIInputText(
+            x=MENU_WIDTH // 2 + 150 - 100,
+            y=MENU_HEIGHT - 200 - 20,
             width=200,
             height=40,
             text=str(int(self.settings.get("sound_volume", 1.0) * 100))
         )
+        self.ui_manager.add(self.sound_slider)
 
-        self.music_slider = arcade.gui.UIInputText(
+        self.music_slider = gui.UIInputText(
+            x=MENU_WIDTH // 2 + 150 - 100,
+            y=MENU_HEIGHT - 280 - 20,
             width=200,
             height=40,
             text=str(int(self.settings.get("music_volume", 0.5) * 100))
         )
+        self.ui_manager.add(self.music_slider)
 
-        self.brightness_slider = arcade.gui.UIInputText(
+        self.brightness_slider = gui.UIInputText(
+            x=MENU_WIDTH // 2 + 150 - 100,
+            y=MENU_HEIGHT - 360 - 20,
             width=200,
             height=40,
             text=str(int(self.settings.get("brightness", 1.0) * 100))
         )
+        self.ui_manager.add(self.brightness_slider)
 
-        # Кнопки
-        self.back_button = arcade.gui.UIFlatButton(
+        self.back_button = gui.UIFlatButton(
+            x=MENU_WIDTH // 2 - BUTTON_WIDTH - 50,
+            y=100,
             text="Назад",
             width=BUTTON_WIDTH,
-            height=BUTTON_HEIGHT,
-            style={
-                "normal": {"font_size": 16},
-                "hover": {"font_size": 16},
-                "pressed": {"font_size": 16}
-            }
+            height=BUTTON_HEIGHT
         )
         self.back_button.on_click = self.go_back
+        self.ui_manager.add(self.back_button)
 
-        self.save_button = arcade.gui.UIFlatButton(
+        self.save_button = gui.UIFlatButton(
+            x=MENU_WIDTH // 2 + 50,
+            y=100,
             text="Сохранить",
             width=BUTTON_WIDTH,
-            height=BUTTON_HEIGHT,
-            style={
-                "normal": {"font_size": 16},
-                "hover": {"font_size": 16},
-                "pressed": {"font_size": 16}
-            }
+            height=BUTTON_HEIGHT
         )
         self.save_button.on_click = self.save_settings
-
-        # Позиционирование
-        center_x = MENU_WIDTH // 2
-        self.sound_slider.center_x = center_x + 150
-        self.sound_slider.center_y = MENU_HEIGHT - 200
-
-        self.music_slider.center_x = center_x + 150
-        self.music_slider.center_y = MENU_HEIGHT - 280
-
-        self.brightness_slider.center_x = center_x + 150
-        self.brightness_slider.center_y = MENU_HEIGHT - 360
-
-        self.back_button.center_x = center_x - 100
-        self.back_button.center_y = 100
-
-        self.save_button.center_x = center_x + 100
-        self.save_button.center_y = 100
+        self.ui_manager.add(self.save_button)
 
     def save_settings(self, event=None):
         """Сохранение настроек"""
         try:
-            # Обновляем настройки
             self.settings["sound_volume"] = int(self.sound_slider.text) / 100
             self.settings["music_volume"] = int(self.music_slider.text) / 100
             self.settings["brightness"] = int(self.brightness_slider.text) / 100
 
-            # Обновляем яркость в главном меню
             self.menu_view.brightness = self.settings["brightness"]
-
-            # Сохраняем в файл
             self.menu_view.settings_manager.save_settings()
 
             if self.menu_view.click_sound:
@@ -301,13 +271,14 @@ class SettingsView(arcade.View):
         """Отрисовка экрана настроек"""
         self.clear()
 
-        # Фон
-        arcade.draw_lrwh_rectangle_textured(
-            0, 0, MENU_WIDTH, MENU_HEIGHT,
-            arcade.load_texture(":resources:images/backgrounds/abstract_3.jpg")
+        arcade.draw_lbwh_rectangle_filled(
+            0,
+            0,
+            MENU_WIDTH,
+            MENU_HEIGHT,
+            arcade.color.DARK_GREEN
         )
 
-        # Заголовок
         arcade.draw_text(
             "НАСТРОЙКИ",
             MENU_WIDTH // 2,
@@ -318,7 +289,6 @@ class SettingsView(arcade.View):
             bold=True
         )
 
-        # Надписи настроек
         arcade.draw_text(
             "Громкость звуков:",
             MENU_WIDTH // 2 - 200,
@@ -343,23 +313,7 @@ class SettingsView(arcade.View):
             24
         )
 
-        # Ползунки
-        self.sound_slider.draw()
-        self.music_slider.draw()
-        self.brightness_slider.draw()
-
-        # Кнопки
-        self.back_button.draw()
-        self.save_button.draw()
-
-    def on_mouse_press(self, x, y, button, modifiers):
-        """Обработка нажатия мыши"""
-        for ui_element in [self.sound_slider, self.music_slider, self.brightness_slider,
-                           self.back_button, self.save_button]:
-            if ui_element.collides_with_point((x, y)):
-                if hasattr(ui_element, 'on_click'):
-                    ui_element.on_click(None)
-                return
+        self.ui_manager.draw()
 
     def on_key_press(self, symbol, modifiers):
         """Обработка нажатия клавиш"""
@@ -370,25 +324,30 @@ class SettingsView(arcade.View):
 
 
 class MenuView(arcade.View):
-    """Главное меню игры"""
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
+        self.ui_manager.on_mouse_press(x, y, button, modifiers)
+
+    def on_mouse_release(self, x: int, y: int, button: int, modifiers: int):
+        self.ui_manager.on_mouse_release(x, y, button, modifiers)
+
+    def on_mouse_motion(self, x: int, y: int, dx: int, dy: int):
+        self.ui_manager.on_mouse_motion(x, y, dx, dy)
 
     def __init__(self, on_start_game: Callable):
         super().__init__()
         self.on_start_game = on_start_game
         self.background_color = arcade.color.DARK_BLUE_GRAY
+        self.ui_manager = gui.UIManager()
 
-        # Загрузка настроек
         self.settings_manager = GameSettings()
         self.settings = self.settings_manager.settings
 
-        # Звуки из встроенной библиотеки Arcade
-        self.click_sound = arcade.load_sound(":resources:sounds/coin2.wav")  # Короткий клик
-        self.select_sound = arcade.load_sound(":resources:sounds/coin4.wav")  # Выбор
-        self.death_sound = arcade.load_sound(":resources:sounds/gameover3.wav")  # Смерть
-        self.hit_sound = arcade.load_sound(":resources:sounds/hit3.wav")  # Удар
-        self.level_up_sound = arcade.load_sound(":resources:sounds/upgrade4.wav")  # Уровень
+        self.click_sound = arcade.load_sound(":resources:sounds/coin2.wav")
+        self.select_sound = arcade.load_sound(":resources:sounds/coin4.wav")
+        self.death_sound = arcade.load_sound(":resources:sounds/gameover3.wav")
+        self.hit_sound = arcade.load_sound(":resources:sounds/hit3.wav")
+        self.level_up_sound = arcade.load_sound(":resources:sounds/upgrade4.wav")
 
-        # Выбранный персонаж
         self.selected_character = self.settings.get("selected_character", "warrior")
         self.characters = {
             "warrior": {
@@ -397,14 +356,26 @@ class MenuView(arcade.View):
                 "health": 120,
                 "speed": 1.0,
                 "description": "Сильный и выносливый боец"
+            },
+            "mage": {
+                "name": "Маг",
+                "damage": 20,
+                "health": 80,
+                "speed": 1.2,
+                "description": "Магический боец с высоким уроном"
+            },
+            "archer": {
+                "name": "Лучник",
+                "damage": 18,
+                "health": 100,
+                "speed": 1.1,
+                "description": "Ловкий и быстрый лучник"
             }
         }
 
-        # Создание кнопок
         self.button_list = []
         self.create_buttons()
 
-        # Текущая яркость
         self.brightness = self.settings.get("brightness", 1.0)
 
     def create_buttons(self):
@@ -420,50 +391,26 @@ class MenuView(arcade.View):
         ]
 
         for text, callback, x, y in buttons:
-            button = arcade.gui.UIFlatButton(
+            button = gui.UIFlatButton(
+                x=x - BUTTON_WIDTH // 2,
+                y=y - BUTTON_HEIGHT // 2,
                 text=text,
                 width=BUTTON_WIDTH,
-                height=BUTTON_HEIGHT,
-                style={
-                    "normal": {
-                        "font_size": 20,
-                        "bg_color": arcade.color.BLUE_GRAY,
-                        "font_color": arcade.color.WHITE,
-                        "border_color": arcade.color.GOLD,
-                        "border_width": 2
-                    },
-                    "hover": {
-                        "font_size": 20,
-                        "bg_color": arcade.color.SLATE_GRAY,
-                        "font_color": arcade.color.YELLOW,
-                        "border_color": arcade.color.GOLD,
-                        "border_width": 2
-                    },
-                    "pressed": {
-                        "font_size": 20,
-                        "bg_color": arcade.color.DARK_SLATE_GRAY,
-                        "font_color": arcade.color.WHITE,
-                        "border_color": arcade.color.YELLOW,
-                        "border_width": 2
-                    }
-                }
+                height=BUTTON_HEIGHT
             )
             button.on_click = lambda event, cb=callback: cb()
-            button.center_x = x
-            button.center_y = y
             self.button_list.append(button)
+            self.ui_manager.add(button)
 
     def start_game(self):
         """Запуск игры"""
         arcade.play_sound(self.click_sound)
 
-        # Сохраняем выбранного персонажа в настройки
         self.settings["selected_character"] = self.selected_character
         self.settings["brightness"] = self.brightness
         self.settings_manager.save_settings()
 
-        # Запускаем игру с выбранным персонажем
-        self.on_start_game(self.selected_character, self.characters[self.selected_character])
+        self.on_start_game()
 
     def open_character_select(self):
         """Открыть экран выбора персонажа"""
@@ -486,20 +433,22 @@ class MenuView(arcade.View):
         """Отрисовка меню"""
         self.clear()
 
-        # Фоновое изображение
-        arcade.draw_lrwh_rectangle_textured(
-            0, 0, MENU_WIDTH, MENU_HEIGHT,
-            arcade.load_texture(":resources:images/backgrounds/abstract_1.jpg")
+        arcade.draw_lbwh_rectangle_filled(
+            0,
+            0,
+            MENU_WIDTH,
+            MENU_HEIGHT,
+            arcade.color.DARK_BLUE_GRAY
         )
 
-        # Затемнение для лучшей читаемости текста
-        arcade.draw_rectangle_filled(
-            MENU_WIDTH // 2, MENU_HEIGHT // 2,
-            MENU_WIDTH, MENU_HEIGHT,
+        arcade.draw_lbwh_rectangle_filled(
+            0,
+            0,
+            MENU_WIDTH,
+            MENU_HEIGHT,
             (0, 0, 0, int(200 * (1 - self.brightness)))
         )
 
-        # Заголовок с тенью
         arcade.draw_text(
             "ГЛАВНОЕ МЕНЮ",
             MENU_WIDTH // 2 + 3,
@@ -519,44 +468,36 @@ class MenuView(arcade.View):
             bold=True
         )
 
-        # Информация о выбранном персонаже
-        character = self.characters[self.selected_character]
-        arcade.draw_text(
-            f"Выбранный персонаж: {character['name']}",
-            MENU_WIDTH // 2,
-            180,
-            arcade.color.LIGHT_BLUE,
-            28,
-            anchor_x="center"
-        )
+        # character = self.characters[self.selected_character]
+        # arcade.draw_text(
+        #     f"Выбранный персонаж: {character['name']}",
+        #     MENU_WIDTH // 2,
+        #     180,
+        #     arcade.color.LIGHT_BLUE,
+        #     28,
+        #     anchor_x="center"
+        # )
 
-        arcade.draw_text(
-            character['description'],
-            MENU_WIDTH // 2,
-            130,
-            arcade.color.LIGHT_YELLOW,
-            20,
-            anchor_x="center"
-        )
+        # arcade.draw_text(
+        #     character['description'],
+        #     MENU_WIDTH // 2,
+        #     130,
+        #     arcade.color.LIGHT_YELLOW,
+        #     20,
+        #     anchor_x="center"
+        # )
 
-        arcade.draw_text(
-            f"Управление: ← → для выбора, ENTER - начать, ESC - выход",
-            MENU_WIDTH // 2,
-            50,
-            arcade.color.LIGHT_GRAY,
-            16,
-            anchor_x="center"
-        )
+        # arcade.draw_text(
+        #     f"Управление: ← → для выбора, ENTER - начать, ESC - выход",
+        #     MENU_WIDTH // 2,
+        #     50,
+        #     arcade.color.LIGHT_GRAY,
+        #     16,
+        #     anchor_x="center"
+        # )
 
-        # Кнопки
-        for button in self.button_list:
-            button.draw()
+        self.ui_manager.draw()
 
-    def on_mouse_press(self, x, y, button, modifiers):
-        """Обработка нажатия мыши"""
-        for ui_button in self.button_list:
-            if ui_button.collides_with_point((x, y)):
-                ui_button.on_click(None)
 
     def on_key_press(self, symbol, modifiers):
         """Обработка нажатия клавиш"""
@@ -565,19 +506,15 @@ class MenuView(arcade.View):
         elif symbol == arcade.key.ESCAPE:
             self.exit_game()
         elif symbol == arcade.key.C:
-            # Быстрый доступ к выбору персонажа
             self.open_character_select()
         elif symbol == arcade.key.S:
-            # Быстрый доступ к настройкам
             self.open_settings()
 
 
-# Дополнительные классы для использования в игре
 class GameSoundManager:
     """Менеджер звуков для игры"""
 
     def __init__(self):
-        # Загружаем все звуки из встроенной библиотеки
         self.sounds = {
             'click': arcade.load_sound(":resources:sounds/coin2.wav"),
             'select': arcade.load_sound(":resources:sounds/coin4.wav"),
@@ -591,10 +528,9 @@ class GameSoundManager:
             'error': arcade.load_sound(":resources:sounds/error2.wav")
         }
 
-        # Громкость по умолчанию
         self.volume = 1.0
 
-    def play(self, sound_name: str, volume: float = None):
+    def play(self, sound_name: str, volume: float | None = None):
         """Воспроизвести звук"""
         if sound_name in self.sounds:
             vol = volume if volume is not None else self.volume
@@ -609,12 +545,10 @@ class GameSoundManager:
         return self.volume
 
 
-# Экспортируемые классы для удобства использования из других модулей
 __all__ = [
     'MenuView',
     'CharacterSelectView',
     'SettingsView',
     'GameSettings',
     'GameSoundManager'
-
 ]
