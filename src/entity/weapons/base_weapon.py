@@ -8,9 +8,10 @@ from entity.player import Player
 class BaseWeapon(arcade.Sprite):
     def __init__(self, path_or_texture: str | arcade.Path | bytes | arcade.Texture, damage: float) -> None: # type: ignore
         super().__init__(path_or_texture, 0.1)
-        self.damage = damage
         self._stats: dict[str, float] = {}
         self.hit_timers: dict[BaseEnemy, float] = {}
+        self.set_stat("damage", damage)
+
 
     def get_stats(self) -> dict[str, float]:
         return self._stats
@@ -35,6 +36,6 @@ class BaseWeapon(arcade.Sprite):
         for enemy in collisions:
             if not self.hit_timers.get(enemy):
                 print(self.get_stats())
-                self.hit_timers[enemy] = 1/self.get_stat("attack_rate")
-                enemy.damage(self.damage)
+                self.hit_timers[enemy] = 2/self.get_stat("attack_rate")
+                enemy.damage(self.get_stat("damage"))
           

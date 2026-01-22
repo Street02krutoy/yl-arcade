@@ -3,7 +3,6 @@ import arcade
 
 from entity.player import Player
 
-PathOrTexture = str | arcade.Path | bytes | arcade.Texture | None # type: ignore
 
 
 class BaseEnemy(arcade.Sprite):

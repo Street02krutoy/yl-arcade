@@ -20,7 +20,7 @@ from gui.level_up import LevelUpLayout
 from inventory.inventory import Inventory
 from inventory.item import InventoryWeapon
 from level.level import GameLevel
-from gui.menu import MenuView
+# from gui.menu import MenuView
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -38,22 +38,20 @@ class GameView(arcade.View):
 
     def __init__(self):
         super().__init__()
-        self.background_color = arcade.color.GRAY_BLUE
         self.player = Player()
         self.inventory = Inventory()
         self.camera = arcade.Camera2D()
         self.keys = set[int]()
         self.player_list = arcade.SpriteList[Player]()
-        self.level = GameLevel()
-        self.start_menu = MenuView()
+        self.level = GameLevel(1)
 
         self.player_list.append(self.player)
         self.ms_boost_list = arcade.SpriteList[arcade.Sprite]()
         self.ms_boost_list.append(arcade.Sprite("assets/green crystal.png",
                                     scale=1))
         self.weapons_list = arcade.SpriteList[BaseWeapon]()
-        self.inventory.add(InventoryWeapon("Пила", CircularRotatingWeapon("assets/dota.png",
-                                                                          2, 200)))
+        self.inventory.add(InventoryWeapon("Пила", CircularRotatingWeapon(
+                                                                          damage=2, radius=200)))
         for item in self.ms_boost_list:
             item.center_x, item.center_y = (253, 135)
         self.enemy_list = arcade.SpriteList[BaseEnemy]()
@@ -78,8 +76,10 @@ class GameView(arcade.View):
         Render the screen.
         """
         self.clear()
+        arcade.draw_sprite(self.level.background)
 
         with self.camera.activate():
+            
             self.ms_boost_list.draw()
             self.weapons_list.draw()
 
@@ -129,12 +129,10 @@ class GameView(arcade.View):
         self.level.update(delta_time, self.player, self.enemy_list)
         self.weapons_list.update(delta_time, self.enemy_list, self.player) # type: ignore
         self.enemy_list.update(delta_time, self.enemy_list) # type: ignore
-        self.text_info = arcade.Text(f"Current MS: {self.player.movespeed}, Current HP: {self.player.hitpoints}"
-                                     f", Position: {self.player.position}, "
-                                     f"Time: {self.format_time_mm_ss(int(self.level.timer))}, "
-                                     f"Spawn: {round(self.level.spawn_timer, 2)}, "
-                                     f"XP: {self.player.xp}/{self.player.xp_to_next_lvl}({self.player.level})",
-                                     16, 16, arcade.color.GREEN, 14, batch=self.batch)
+        self.text_info = arcade.Text( 
+                                     f"Время: {self.format_time_mm_ss(int(self.level.timer))}, "
+                                     f"Опыт: {self.player.xp}/{self.player.xp_to_next_lvl}({self.player.level})",
+                                     16, 16, arcade.color.DARK_GREEN, 14, batch=self.batch)
         self.player.update_movespeed_with_keys(self.keys)
         self.player.update_movement(delta_time)
 
@@ -154,7 +152,13 @@ class GameView(arcade.View):
     def on_key_press(self, symbol: int, modifiers: int):
         self.keys.add(symbol)
         if symbol == arcade.key.R:
-            self.reset(GameLevel())
+            self.reset(GameLevel(1))
+        if symbol == arcade.key.KEY_1:
+            self.level = GameLevel(1)
+        if symbol == arcade.key.KEY_2:
+            self.level = GameLevel(2)
+        if symbol == arcade.key.KEY_3:
+            self.level = GameLevel(3)
 
 
     def on_key_release(self, symbol: int, modifiers: int):
@@ -173,11 +177,16 @@ def main():
     window = arcade.Window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
 
     game = GameView()
+    
+    def start():
+        window.hide_view()
+        window.show_view(game)
 
-    window.show_view(game)
+    # menu = MenuView(start)
+    start()
+
 
     arcade.run()
-
 
 
 if __name__ == "__main__":
